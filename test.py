@@ -4,26 +4,10 @@ import numpy as np
 import time
 from threading import Thread
 
-OS = "pc" ## pc or pi
-
-if OS == "pi":
-    from picamera.array import PiRGBArray
-    from picamera import PiCamera
-
 class WebcamVideoStream:
     def __init__(self, src=0):
-        if OS == "pi":
-            self.camera = PiCamera()
-            self.camera.brightness = 60
-            self.camera.resolution = (640, 480)
-            self.camera.framerate = 32
-            self.rawCapture = PiRGBArray(self.camera, size=(640, 480))
-            time.sleep(0.1)
-            self.frame = np.empty((480, 640, 3), dtype=np.uint8)
-        elif OS == "pc":
-            self.stream = cv2.VideoCapture(src)
-            self.grabbed, self.frame = self.stream.read()
-        
+        self.stream = cv2.VideoCapture(src)
+        self.grabbed, self.frame = self.stream.read()
         self.stopped = False
         
     def start(self):
@@ -31,11 +15,8 @@ class WebcamVideoStream:
 
     def update(self):
         while True:
-            if OS == "pi":
-                self.camera.capture(self.frame, format="bgr")
-            elif OS == "pc":
-                self.grabbed, self.frame = self.stream.read()
-                #self.frame = cv2.resize(self.frame, (480, 360), interpolation = cv2.INTER_AREA)
+            self.grabbed, self.frame = self.stream.read()
+            #self.frame = cv2.resize(self.frame, (480, 360), interpolation = cv2.INTER_AREA)
             
             cv2.imshow("Frame", self.frame)
             key = cv2.waitKey(1)
@@ -68,6 +49,7 @@ tolerance = 0.5
 
 i = 1
 while not vs.stopped:
+    print("-" * 30)
     t = time.time()
     boxes = face_recognition.face_locations(vs.frame, model="hog")
     encodings = face_recognition.face_encodings(vs.frame, boxes)
