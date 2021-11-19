@@ -3,36 +3,28 @@ from helpers import *
 if not os.path.exists("data"):
     os.mkdir("data")
 
-vs = WebcamVideoStream(0)
-vs.start()
+vs = Capture(0)
 
-encodings = []
-capturedImages = []
+fd = FaceDetector(vs)
+fd.startFaceAddition()
 
-# Randomly selects 20 face data out of all data
-n = 1
 
 while not vs.stopped:
-    capturedFrame = vs.frame.copy()
-    
-    boxes = face_recognition.face_locations(capturedFrame, model="hog")
-    encoding = face_recognition.face_encodings(capturedFrame, boxes)
-    if len(encoding) == 1:
-        encodings.append(encoding[0])
-        capturedImages.append(capturedFrame)
-        print(f"Number of captured faces: {n}", end="\r")
-        n += 1
+    vs.update()    
 
-print()    
+while 1:
+    if not fd.done:
+        continue
+    else:
+        break
 
-cv2.destroyAllWindows()
-
+print()
 inp = input("Enter a name for the face: ")
 
 f = open("data/" + inp + ".data", "w")
 
-random.shuffle(encodings)
-encodings = encodings[:dropTo]
+random.shuffle(fd.encodings)
+encodings = fd.encodings[:dropTo]
 
 for encoding in encodings:
     i = 0
