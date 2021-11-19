@@ -8,7 +8,6 @@ vs = Capture(0)
 fd = FaceDetector(vs)
 fd.startFaceAddition()
 
-
 while not vs.stopped:
     vs.update()    
 

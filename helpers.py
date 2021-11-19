@@ -15,9 +15,6 @@ class FaceDetector:
         # default 0.6
         # lower value means more strict face recognition
         self.tolerance = 0.5
-
-        self.faceMap = loadDatas()
-        self.faceNames = self.faceMap.keys()
         
         # for facedata addition
         self.encodings = []
@@ -49,6 +46,9 @@ class FaceDetector:
         self.done = True
         
     def update(self):
+        faceMap = loadDatas()
+        faceNames = faceMap.keys()
+
         while not self.captureClass.stopped:
             if (type(self.captureClass.frame) == type(None)):
                 continue
@@ -59,18 +59,21 @@ class FaceDetector:
             
             print(f"Face recognition time: {time.time() - t}")
             
-            j = 0
+            if len(encodings) == 0:
+                print("No face found")
+            else:
+                print(f"{len(encodings)} face found")
+
             t = time.time()
             for e in encodings:
-                for name in self.faceNames:
-                    if np.sum(face_recognition.compare_faces(self.faceMap[name], e, self.tolerance)) > dropTo * 0.5:
+                for name in faceNames:
+                    if np.sum(face_recognition.compare_faces(faceMap[name], e, self.tolerance)) > dropTo * 0.5:
                         print(f"Detected faces: {name}")
                         break
 
-                j += 1
-            if j == 0:
-                print("No face found")
             print(f"Face cross checking time: {time.time() - t}")
+
+        self.done = True
 
 class Capture:
     def __init__(self, src=0, scale=0.5):
@@ -112,9 +115,11 @@ def loadData(dataFile):
 
 def loadDatas():
     files = os.listdir("data")
-
+    
     returnMap = {}
     for file in files:
+        if file.split(".")[-1] != "data":
+            continue
         data = loadData("data/" + file)
         fileName = "".join(file.split(".")[:-1])
         returnMap[fileName] = data
