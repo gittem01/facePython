@@ -6,7 +6,9 @@ import random
 import os
 from threading import Thread
 
-dropTo = 10
+# drops number of captured face data to \(dropTo)
+# by randomly selecting \(dropTo) datas from the data list
+dropTo = 1
 
 class FaceDetector:
     def __init__(self, captureClass):
@@ -29,7 +31,6 @@ class FaceDetector:
         Thread(target=self.addFaceUpdate, args=()).start()
 
     def addFaceUpdate(self):
-        # Randomly selects 'n' face data out of all data
         n = 1
         while not self.captureClass.stopped:
             if (type(self.captureClass.frame) == type(None)):
@@ -81,46 +82,50 @@ class Capture:
         self.scale = scale
         self.frame = None
         self.stopped = False
-        self.key = 0
 
     def update(self):
-        self.key = cv2.waitKey(1)
-        if self.key == ord("q") or self.key == 27:
+        key = cv2.waitKey(1)
+        if key == ord("q") or key == 27: # 27 : ESC key
             self.stopped = True
             cv2.destroyAllWindows()
             return
+
         _, self.frame = self.stream.read()
+
         if (self.scale != 1):
             self.frame = cv2.resize(self.frame, None, fx=self.scale, fy=self.scale, interpolation=cv2.INTER_AREA)
+
         cv2.imshow("Video", self.frame)
 
 
-
-def loadData(dataFile):
+def loadSingleData(dataFile):
     f = open(dataFile, "r")
     rl = f.readlines()
 
     arr = np.empty((len(rl), 128))
 
-    i = -1
+    i = 0
     for data in rl:
-        i += 1
         data = data[:-1]
         d = data.split(" ")
-        j = -1
+        j = 0
         for val in d:
-            j += 1
             arr[i][j] = float(val)
+            j += 1
+        i += 1
     return arr
 
 def loadDatas():
+    if not os.path.exists("data"):
+        return {}
+
     files = os.listdir("data")
     
     returnMap = {}
     for file in files:
         if file.split(".")[-1] != "data":
             continue
-        data = loadData("data/" + file)
+        data = loadSingleData("data/" + file)
         fileName = "".join(file.split(".")[:-1])
         returnMap[fileName] = data
     return returnMap

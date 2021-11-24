@@ -26,12 +26,8 @@ random.shuffle(fd.encodings)
 encodings = fd.encodings[:dropTo]
 
 for encoding in encodings:
-    i = 0
-    for e in encoding:
-        i += 1
-        if i != 128:
-            f.write(str(e) + " ")
-        else:
-            f.write(str(e) + "\n")
+    for e in encoding[:-1]:
+        f.write(str(e) + " ")
+    f.write(str(encoding[-1]) + "\n")
 
 f.close()
